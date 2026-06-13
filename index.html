@@ -224,6 +224,61 @@ e.target.pause();
 
 });
 
+    document.querySelectorAll("video").forEach(video => {
+
+let holdTimer;
+let isHolding = false;
+
+video.addEventListener("touchstart", () => {
+
+holdTimer = setTimeout(() => {
+video.playbackRate = 2.0;
+isHolding = true;
+}, 300); // nach 300ms wird 2x aktiviert
+
+});
+
+video.addEventListener("touchend", () => {
+
+clearTimeout(holdTimer);
+
+video.playbackRate = 1.0;
+isHolding = false;
+
+});
+
+video.addEventListener("touchcancel", () => {
+
+clearTimeout(holdTimer);
+video.playbackRate = 1.0;
+
+});
+
+});
+document.querySelectorAll(".video-container").forEach(container => {
+
+const video = container.querySelector("video");
+
+container.addEventListener("touchstart", (e) => {
+
+const x = e.touches[0].clientX;
+const width = window.innerWidth;
+
+if (x < width * 0.3) {
+// linke Seite → zurückspulen
+video.currentTime = Math.max(0, video.currentTime - 3);
+}
+
+if (x > width * 0.7) {
+// rechte Seite → vorspulen
+video.currentTime = Math.min(video.duration, video.currentTime + 3);
+}
+
+});
+
+});
+
+    
 </script>
 
 </body>
