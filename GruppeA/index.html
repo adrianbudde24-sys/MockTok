@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feed</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+}
+
+.feed{
+    width:100%;
+    height:100%;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    scroll-snap-align: start;
+    overflow: hidden;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.overlay{
+    position:absolute;
+    bottom:80px;
+    left:15px;
+    color:white;
+    max-width:70%;
+    text-shadow:0 0 5px rgba(0,0,0,0.7);
+}
+
+.username{
+    font-weight:bold;
+    margin-bottom:8px;
+}
+
+.description{
+    font-size:0.95rem;
+}
+
+.actions{
+    position:absolute;
+    right:15px;
+    bottom:80px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    color:white;
+    text-align:center;
+}
+
+.action{
+    font-size:1.8rem;
+    cursor:pointer;
+}
+
+.action span{
+    display:block;
+    font-size:0.8rem;
+    margin-top:4px;
+}
+  
+.feed {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    height: 100dvh;
+}
+.topbar{
+    position:fixed;
+    top:0;
+    width:100%;
+    text-align:center;
+    color:white;
+    padding:15px;
+    font-weight:bold;
+    z-index:100;
+    background:linear-gradient(
+        rgba(0,0,0,0.4),
+        rgba(0,0,0,0)
+    );
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+    Für Dich
+</div>
+
+<div id="feed" class="feed"></div>
+
+<script>
+
+/*
+-------------------------------------
+VIDEOS HIER EINTRAGEN
+-------------------------------------
+*/
+
+const videos = [
+
+{
+    file:"video1.mp4",
+    user:"@Fabi",
+    description:"Leute, dieser Tipp hat mir die Augen geöffnet."
+},
+
+{
+    file:"video2.mp4",
+    user:"@Kev",
+    description:"All day everyday."
+},
+
+{
+    file:"video3.mp4",
+    user:"@Ramboo",
+    description:"I can't."
+},
+
+{
+    file:"video4.mp4",
+    user:"@Rainbow23",
+    description:"Aktuelle Entwicklungen."
+},
+     
+{
+    file:"video5.mp4",
+    user:"@Kim",
+    description:"Das crazy."
+}
+
+];
+
+const feed = document.getElementById("feed");
+
+videos.forEach(v => {
+
+const container = document.createElement("div");
+container.className = "video-container";
+
+container.innerHTML = `
+<video playsinline preload="metadata">
+    <source src="${v.file}" type="video/mp4">
+</video>
+
+<div class="overlay">
+    <div class="username">${v.user}</div>
+    <div class="description">${v.description}</div>
+</div>
+
+<div class="actions">
+    <div class="action">❤️<span>Gefällt mir</span></div>
+    <div class="action">💬<span>Kommentar</span></div>
+    <div class="action">↗️<span>Teilen</span></div>
+</div>
+`;
+
+feed.appendChild(container);
+
+});
+
+const observer = new IntersectionObserver(entries => {
+
+entries.forEach(entry => {
+
+const video = entry.target.querySelector("video");
+
+if(entry.isIntersecting){
+
+document.querySelectorAll("video").forEach(v => {
+v.pause();
+});
+
+video.play().catch(()=>{});
+
+}else{
+
+video.pause();
+
+}
+
+});
+
+},{
+threshold:0.7
+});
+
+document
+.querySelectorAll(".video-container")
+.forEach(el => observer.observe(el));
+
+document.addEventListener("click", e => {
+
+if(e.target.tagName === "VIDEO"){
+
+if(e.target.paused){
+
+e.target.play();
+
+}else{
+
+e.target.pause();
+
+}
+
+}
+
+});
+
+    document.querySelectorAll("video").forEach(video => {
+
+let holdTimer;
+let isHolding = false;
+
+video.addEventListener("touchstart", () => {
+
+holdTimer = setTimeout(() => {
+video.playbackRate = 2.0;
+isHolding = true;
+}, 300); // nach 300ms wird 2x aktiviert
+
+});
+
+video.addEventListener("touchend", () => {
+
+clearTimeout(holdTimer);
+
+video.playbackRate = 1.0;
+isHolding = false;
+
+});
+
+video.addEventListener("touchcancel", () => {
+
+clearTimeout(holdTimer);
+video.playbackRate = 1.0;
+
+});
+
+});
+document.querySelectorAll(".video-container").forEach(container => {
+
+const video = container.querySelector("video");
+
+container.addEventListener("touchstart", (e) => {
+
+const x = e.touches[0].clientX;
+const width = window.innerWidth;
+
+if (x < width * 0.3) {
+// linke Seite → zurückspulen
+video.currentTime = Math.max(0, video.currentTime - 3);
+}
+
+if (x > width * 0.7) {
+// rechte Seite → vorspulen
+video.currentTime = Math.min(video.duration, video.currentTime + 3);
+}
+
+});
+
+});
+
+    
+</script>
+
+</body>
+</html>
